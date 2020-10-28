@@ -8,12 +8,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.cadastrodeeventos.database.EventoDAO;
 import com.example.cadastrodeeventos.model.Evento;
 
 
 public class CadastroEventoActivity extends AppCompatActivity {
 
-    private boolean edicao = false;
     private int id = 0;
 
     @Override
@@ -33,8 +33,7 @@ public class CadastroEventoActivity extends AppCompatActivity {
             EditText editTextData = findViewById(R.id.editText_data);
             editTextNome.setText(evento.getNome());
             editTextLocal.setText(evento.getLocal());
-            editTextData.setText(evento.getData());
-            edicao = true;
+            editTextData.setText(String.valueOf(evento.getData()));
             id = evento.getId();
         }
     }
@@ -43,29 +42,30 @@ public class CadastroEventoActivity extends AppCompatActivity {
         finish();
     }
 
-    public void onClickSalvar(View v){
-
+    public void onClickSalvar(View v) {
         EditText editTextNome = findViewById(R.id.editText_nome);
-        EditText editTextLocal = findViewById(R.id.editText_local);
         EditText editTextData = findViewById(R.id.editText_data);
-        String nome = editTextNome.getText().toString();
-        String local = editTextLocal.getText().toString();
-        String data = editTextData.getText().toString();
-        if (!nome.isEmpty() && !local.isEmpty() && !data.isEmpty()) {
-            Evento evento = new Evento(id, nome, local, data);
-            Intent intent = new Intent();
+        EditText editTextLocal = findViewById(R.id.editText_local);
 
-            if (edicao) {
-                intent.putExtra("eventoEditado", evento);
-                setResult(11, intent);
+        if(!editTextNome.getText().toString().isEmpty() && !editTextData.getText().toString().isEmpty() &&  !editTextLocal.getText().toString().isEmpty()){
+
+            String nome = editTextNome.getText().toString();
+            String data = editTextData.getText().toString();
+            String local = editTextLocal.getText().toString();
+
+            Evento evento = new Evento( id, nome, data, local);
+            EventoDAO eventoDAO = new EventoDAO(getBaseContext());
+            boolean salvou = eventoDAO.salvar(evento);
+            if (salvou) {
+                finish();
             } else {
-                intent.putExtra("novoEvento", evento);
-                setResult(10, intent);
+                Toast.makeText(CadastroEventoActivity.this, "Erro ao salvar evento", Toast.LENGTH_LONG).show();
             }
-
-            finish();
-        } else{
+        }else {
             Toast.makeText(CadastroEventoActivity.this, "Preencha todos os campos!", Toast.LENGTH_LONG).show();
         }
+
+
     }
+
 }
